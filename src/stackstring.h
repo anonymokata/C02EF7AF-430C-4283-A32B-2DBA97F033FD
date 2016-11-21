@@ -1,8 +1,10 @@
 #ifndef STACKSTRING_H
-#define STACKSTRINGCAPACITY 256 // up to this many number of strings in the stack
+#define STACKSTRING_H
 
 #include <string.h>
 #include <stdbool.h>
+
+#define STACKSTRINGCAPACITY 256 // up to this many number of strings in the stack
 
 #ifdef __cplusplus
 

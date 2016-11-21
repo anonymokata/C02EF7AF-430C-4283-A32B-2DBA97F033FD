@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <check.h>
 #include "infixrpnconv.h"
+#include "stackstring.h"
 
 START_TEST (infixtorpn_outputbufferatleastaslongasinputstring)
 {
@@ -30,7 +31,7 @@ START_TEST (rpntoinfix_outputbufferatleastaslongasinputstring)
 END_TEST
 
 
-START_TEST (infixtorpn_validateinputexprlowercaselettersonly)
+START_TEST (infixtorpn_validateinputexprlowercaselettersandvalidoperatorsonly)
 {
     char outputExpression[INFIXRPN_OUTBUFFERSIZE];
     const char inputExpr[] = "l/m^n*o-p";
@@ -43,12 +44,16 @@ START_TEST (infixtorpn_validateinputexprlowercaselettersonly)
     //
     const char inputExpr3[] = "l/m^n*o-123";
     ret = infixToRPN(inputExpr3, outputExpression, INFIXRPN_OUTBUFFERSIZE);
+    ck_assert_int_eq(ret, 0x01<<6);    
+    //
+    const char inputExpr4[] = "l /m^ n*o-p"; // white space in between the expression
+    ret = rpnToInfix(inputExpr4, outputExpression, INFIXRPN_OUTBUFFERSIZE);
     ck_assert_int_eq(ret, 0x01<<6);
 
 }
 END_TEST
 
-START_TEST (rpntoinfix_validateinputexprlowercaselettersonly)
+START_TEST (rpntoinfix_validateinputexprlowercaselettersandvalidoperatorsonly)
 {
     char outputExpression[INFIXRPN_OUTBUFFERSIZE];
     const char inputExpr[] = "ag+ba-c+cedf^*+^*";
@@ -66,6 +71,48 @@ START_TEST (rpntoinfix_validateinputexprlowercaselettersonly)
     const char inputExpr4[] = "(ag)+ba-c+cedf^*+^*"; // input is rpn so no ()
     ret = rpnToInfix(inputExpr4, outputExpression, INFIXRPN_OUTBUFFERSIZE);
     ck_assert_int_eq(ret, 0x01<<6);
+    //
+    const char inputExpr5[] = "a g +ba-c+cedf^*+^*"; // white space in between the expression
+    ret = rpnToInfix(inputExpr5, outputExpression, INFIXRPN_OUTBUFFERSIZE);
+    ck_assert_int_eq(ret, 0x01<<6);
+
+}
+END_TEST
+
+START_TEST (stack_operations)
+{
+    /*static*/ Stack operandTokens; // the static declaration avoids segmentation fault if we try to use the stack without first calling initStack. but for this test we'll properly initialize the stack.
+    // only testing stack functionality
+    //
+    char token[50];
+    int ret;
+    //ret = topStack(&operandTokens, token); commented out on purpose
+    //ck_assert_int_ne(ret, 0);
+    //
+    initStack(&operandTokens);
+    ck_assert(isEmptyStack(&operandTokens) == true);
+    //
+    memset(token, 0, 50);
+    sprintf(token, "(%s)", "test");
+    ret = pushStack(&operandTokens, token);
+    ck_assert_int_eq(ret, 0);
+
+    ck_assert((!isEmptyStack(&operandTokens)) == true);
+
+    memset(token, 0, 50);
+    ret = pushStack(&operandTokens, token); //should fail. trying to push empty token
+    ck_assert_int_ne(ret, 0);
+
+    memset(token, 0, 50);
+    ret = popStack(&operandTokens, token);
+    ck_assert_int_eq(ret, 0);
+    ck_assert_str_eq(token, "(test)");
+
+    ck_assert(isEmptyStack(&operandTokens) == true);
+
+    memset(token, 0, 50);
+    ret = popStack(&operandTokens, token); // should fail
+    ck_assert_int_ne(ret, 0);
 
 }
 END_TEST
@@ -74,13 +121,17 @@ Suite * infixrpnconv_suite (void)
 {
   Suite *s = suite_create ("infixrpnconv");
 
-    /* Core test case */
-    TCase *tc_core = tcase_create ("Validation");
-    tcase_add_test (tc_core, infixtorpn_outputbufferatleastaslongasinputstring);
-    tcase_add_test (tc_core, rpntoinfix_outputbufferatleastaslongasinputstring);
-    tcase_add_test (tc_core, infixtorpn_validateinputexprlowercaselettersonly);
-    tcase_add_test (tc_core, rpntoinfix_validateinputexprlowercaselettersonly);
-    suite_add_tcase (s, tc_core);
+    /* Validation test case */
+    TCase *tc_val = tcase_create ("Validation");
+    tcase_add_test (tc_val, infixtorpn_outputbufferatleastaslongasinputstring);
+    tcase_add_test (tc_val, rpntoinfix_outputbufferatleastaslongasinputstring);
+    tcase_add_test (tc_val, infixtorpn_validateinputexprlowercaselettersandvalidoperatorsonly);
+    tcase_add_test (tc_val, rpntoinfix_validateinputexprlowercaselettersandvalidoperatorsonly);
+    suite_add_tcase (s, tc_val);
+
+    TCase *tc_stk = tcase_create ("Stack");
+    tcase_add_test (tc_stk, stack_operations);
+    suite_add_tcase (s, tc_stk);
 
     return s;
 }

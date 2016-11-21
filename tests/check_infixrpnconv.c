@@ -148,6 +148,42 @@ START_TEST (rpntoinfix_algostrategy)
 }
 END_TEST
 
+START_TEST (infixtorpn_algostrategy)
+{
+    char outputExpression[INFIXRPN_OUTBUFFERSIZE];
+    const char inputExpr[] = "a+b-c";
+    int ret = infixToRPN(inputExpr, outputExpression, INFIXRPN_OUTBUFFERSIZE);
+    ck_assert_int_eq(ret, 0);
+    ck_assert_str_eq(outputExpression, "abc-+");
+
+    const char inputExpr2[] = "(a+b)-c";
+    ret = infixToRPN(inputExpr2, outputExpression, INFIXRPN_OUTBUFFERSIZE);
+    ck_assert_int_eq(ret, 0);
+    ck_assert_str_eq(outputExpression, "ab+c-");
+
+    const char inputExpr3[] = "l/m^n*o-p";
+    ret = infixToRPN(inputExpr3, outputExpression, INFIXRPN_OUTBUFFERSIZE);
+    ck_assert_int_eq(ret, 0);
+    ck_assert_str_eq(outputExpression, "lmn^/o*p-");
+
+    const char inputExpr4[] = "((v/w)^x)*(y-z)";
+    ret = infixToRPN(inputExpr4, outputExpression, INFIXRPN_OUTBUFFERSIZE);
+    ck_assert_int_eq(ret, 0);
+    ck_assert_str_eq(outputExpression, "vw/x^yz-*");
+
+    const char inputExpr5[] = "(a+g)*(((b-a)+c)^(c+(e*(d^f))))";
+    ret = infixToRPN(inputExpr5, outputExpression, INFIXRPN_OUTBUFFERSIZE);
+    ck_assert_int_eq(ret, 0);
+    ck_assert_str_eq(outputExpression, "ag+ba-c+cedf^*+^*");
+
+    //unbalanced parenthesis
+    const char inputExpr6[] = "((l/(m^n))*o)-p)";
+    ret = infixToRPN(inputExpr6, outputExpression, INFIXRPN_OUTBUFFERSIZE);
+    ck_assert_int_ne(ret, 0);
+
+}
+END_TEST
+
 
 Suite * infixrpnconv_suite (void)
 {
@@ -167,7 +203,7 @@ Suite * infixrpnconv_suite (void)
 
     TCase *tc_strtgy = tcase_create ("AlgoStrategies");
     tcase_add_test (tc_strtgy, rpntoinfix_algostrategy);
-
+    tcase_add_test (tc_strtgy, infixtorpn_algostrategy);
     suite_add_tcase (s, tc_strtgy);
 
     return s;

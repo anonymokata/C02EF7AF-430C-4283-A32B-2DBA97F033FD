@@ -15,3 +15,8 @@ test: ./tests/check_infixrpnconv.c libinfixrpnconv.a ./src/infixrpnconv.h
 
 clean:
 	rm *.o
+
+resettest:
+	rm *.o
+	rm libinfixrpnconv.a
+	rm infixrpnkatatests

@@ -13,7 +13,70 @@ int infixToRPN(const char *originalExpression, char *outputExpression, size_t ou
         const char validInputChars[] = "qwertyuioplkjhgfdsazxcvbnm^/*-+()";
         ret = validateInput(originalExpression, validInputChars);
         if (ret == 0) {
+            Stack operatorTokens;
+            initStack(&operatorTokens);
+            const char operators[] = "^/*-+";
+            for (int j = 0; j != expressionLength; j++) {
+                char currentTokenString[2];
+                sprintf(currentTokenString, "%c", originalExpression[j]);
+                //
+                const char *operatorPtr = strstr(operators, currentTokenString);
+                if (operatorPtr) {
+                    char operatorStackTokenString[2];
+                    if (!isEmptyStack(&operatorTokens)) {
+                        int operatorCurrentTokenPos = (operatorPtr - operators);
+                        topStack(&operatorTokens, operatorStackTokenString);
+                        while ((!strstr(operatorStackTokenString, "(")) && (!isEmptyStack(&operatorTokens))) {
+                            operatorPtr = strstr(operators, operatorStackTokenString);
+                            int operatorStackTokenPos = (operatorPtr - operators);
+                            if (operatorCurrentTokenPos < operatorStackTokenPos) { // determine operator precedence
+                                break;
+                            }
+                            else {
+                                popStack(&operatorTokens, operatorStackTokenString);
+                                strcat(outputExpression, operatorStackTokenString);
+                            }
+                            topStack(&operatorTokens, operatorStackTokenString);
+                        }
 
+                    }
+                    pushStack(&operatorTokens, currentTokenString);
+
+                }
+                else {
+                    if (strstr(currentTokenString, "(")) {
+                        pushStack(&operatorTokens, currentTokenString);
+                    }
+                    else {
+                        if (strstr(currentTokenString, ")")) {
+                            char operatorToken[2];
+                            do {
+                                popStack(&operatorTokens, operatorToken);
+                                if (!strstr(operatorToken, "("))
+                                    strcat(outputExpression, operatorToken);
+                            } while ( (!strstr(operatorToken, "(")) && (!isEmptyStack(&operatorTokens)) );
+                            if (!strstr(operatorToken, "(")) {
+                                // at this point, we've popped all elements off the operator stack and still no '(' found. This means that parentheses are not balanced so quit with exit code != 0
+                                ret = 0x01<<1;
+                                break;
+                            }
+
+                        }
+                        else {
+                            strcat(outputExpression, currentTokenString);
+                        }
+                    }
+                }
+            }
+            char operatorStackTokenString[2];
+            while (!isEmptyStack(&operatorTokens)) {
+                popStack(&operatorTokens, operatorStackTokenString);
+                if (strstr(operatorStackTokenString, "(")) {
+                        ret = 0x01 << 1;
+                        // can't break here. need to keep emptying the stack in order to deallocate the rest of the elements from the heap.
+                }
+                strcat(outputExpression, operatorStackTokenString);
+            }
         }
     }
     else

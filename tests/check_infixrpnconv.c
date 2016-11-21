@@ -117,6 +117,38 @@ START_TEST (stack_operations)
 }
 END_TEST
 
+START_TEST (rpntoinfix_algostrategy)
+{
+    char outputExpression[INFIXRPN_OUTBUFFERSIZE];
+    const char inputExpr[] = "abc-+";
+    int ret = rpnToInfix(inputExpr, outputExpression, INFIXRPN_OUTBUFFERSIZE);
+    ck_assert_int_eq(ret, 0);
+    ck_assert_str_eq(outputExpression, "(a+(b-c))");
+
+    const char inputExpr2[] = "ab+c-";
+    ret = rpnToInfix(inputExpr2, outputExpression, INFIXRPN_OUTBUFFERSIZE);
+    ck_assert_int_eq(ret, 0);
+    ck_assert_str_eq(outputExpression, "((a+b)-c)");
+
+    const char inputExpr3[] = "lmn^/o*p-";
+    ret = rpnToInfix(inputExpr3, outputExpression, INFIXRPN_OUTBUFFERSIZE);
+    ck_assert_int_eq(ret, 0);
+    ck_assert_str_eq(outputExpression, "(((l/(m^n))*o)-p)");
+
+    const char inputExpr4[] = "vw/x^yz-*";
+    ret = rpnToInfix(inputExpr4, outputExpression, INFIXRPN_OUTBUFFERSIZE);
+    ck_assert_int_eq(ret, 0);
+    ck_assert_str_eq(outputExpression, "(((v/w)^x)*(y-z))");
+
+    const char inputExpr5[] = "ag+ba-c+cedf^*+^*";
+    ret = rpnToInfix(inputExpr5, outputExpression, INFIXRPN_OUTBUFFERSIZE);
+    ck_assert_int_eq(ret, 0);
+    ck_assert_str_eq(outputExpression, "((a+g)*(((b-a)+c)^(c+(e*(d^f)))))");
+
+}
+END_TEST
+
+
 Suite * infixrpnconv_suite (void)
 {
   Suite *s = suite_create ("infixrpnconv");
@@ -132,6 +164,11 @@ Suite * infixrpnconv_suite (void)
     TCase *tc_stk = tcase_create ("Stack");
     tcase_add_test (tc_stk, stack_operations);
     suite_add_tcase (s, tc_stk);
+
+    TCase *tc_strtgy = tcase_create ("AlgoStrategies");
+    tcase_add_test (tc_strtgy, rpntoinfix_algostrategy);
+
+    suite_add_tcase (s, tc_strtgy);
 
     return s;
 }

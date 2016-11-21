@@ -29,7 +29,39 @@ int rpnToInfix(const char *originalExpression, char *outputExpression, size_t ou
         const char validInputChars[] = "qwertyuioplkjhgfdsazxcvbnm^/*-+";
         ret = validateInput(originalExpression, validInputChars);
         if (ret == 0) {
-
+            Stack operandTokens;
+            initStack(&operandTokens);
+            const char operators[] = "^/*-+";
+            for (int j = 0; j != expressionLength; j++) {
+                char currentTokenString[2];
+                sprintf(currentTokenString, "%c", originalExpression[j]);
+                const char *operatorPtr = strstr(operators, currentTokenString);
+                if (operatorPtr) {
+                    char rightOperandToken[outBufferSz/2];
+                    char leftOperandToken[outBufferSz/2];
+                    popStack(&operandTokens, rightOperandToken);
+                    popStack(&operandTokens, leftOperandToken);
+                    // write to buffer and then put back into operand stack
+                    char operandTokenString[outBufferSz];  // 50*2 + 2() + 1^ + 1\0
+                    sprintf(operandTokenString, "(%s%s%s)", leftOperandToken, currentTokenString, rightOperandToken);
+                    pushStack(&operandTokens, operandTokenString);
+                }
+                else {
+                    pushStack(&operandTokens, currentTokenString);
+                }
+            }	//
+            // copy operandTokens into outputExpression buffer. Fill buffer in reverse order
+            while (!isEmptyStack(&operandTokens)) {
+                char operandTokenString[outBufferSz];
+                popStack(&operandTokens, operandTokenString);
+                int currentLength = strlen(outputExpression);
+                int spacesToMove = strlen(operandTokenString);
+                if (currentLength > 0) {
+                    memmove(outputExpression + spacesToMove, outputExpression, currentLength);
+                }
+                memcpy(outputExpression, operandTokenString, spacesToMove);
+            }
+            //
         }
     }
     else

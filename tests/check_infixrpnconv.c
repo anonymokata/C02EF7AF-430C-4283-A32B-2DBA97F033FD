@@ -14,6 +14,10 @@ START_TEST (infixtorpn_outputbufferatleastaslongasinputstring)
     ret = infixToRPN(inputExpr, outputExpression2, 2);
     ck_assert_int_eq(ret, 0x01<<7);
 
+    ret = infixToRPN("", outputExpression, INFIXRPN_OUTBUFFERSIZE); // check if input string is empty. if so, then nothing happens.
+    ck_assert_int_eq(ret, 0);
+    ck_assert_str_eq(outputExpression, "");
+
 }
 END_TEST
 
@@ -27,6 +31,10 @@ START_TEST (rpntoinfix_outputbufferatleastaslongasinputstring)
     char outputExpression2[2]; //output buffer smaller than input unacceptable. infix output could be way larger than rpn input.
     ret = rpnToInfix(inputExpr, outputExpression2, 2);
     ck_assert_int_eq(ret, 0x01<<7);
+
+    ret = rpnToInfix("", outputExpression, INFIXRPN_OUTBUFFERSIZE); // check if input string is empty. if so, then nothing happens.
+    ck_assert_int_eq(ret, 0);
+    ck_assert_str_eq(outputExpression, "");
 }
 END_TEST
 

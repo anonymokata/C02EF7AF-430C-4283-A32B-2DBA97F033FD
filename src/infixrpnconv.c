@@ -8,7 +8,7 @@ int validateInput(const char *originalExpression, const char *validInputChars);
 int infixToRPN(const char *originalExpression, char *outputExpression, size_t outBufferSz) {
     int ret = 0;
     memset(outputExpression, 0, outBufferSz);
-    int expressionLength = strlen(originalExpression);
+    size_t expressionLength = strlen(originalExpression);
     if (outBufferSz >= (expressionLength + 1)) {
         const char validInputChars[] = "qwertyuioplkjhgfdsazxcvbnm^/*-+()";
         ret = validateInput(originalExpression, validInputChars);
@@ -16,7 +16,7 @@ int infixToRPN(const char *originalExpression, char *outputExpression, size_t ou
             Stack operatorTokens;
             initStack(&operatorTokens);
             const char operators[] = "^/*-+";
-            for (int j = 0; j != expressionLength; j++) {
+            for (size_t j = 0; j != expressionLength; j++) {
                 char currentTokenString[2];
                 sprintf(currentTokenString, "%c", originalExpression[j]);
                 //
@@ -87,7 +87,7 @@ int infixToRPN(const char *originalExpression, char *outputExpression, size_t ou
 int rpnToInfix(const char *originalExpression, char *outputExpression, size_t outBufferSz) {
     int ret = 0;
     memset(outputExpression, 0, outBufferSz);
-    int expressionLength = strlen(originalExpression);
+    size_t expressionLength = strlen(originalExpression);
     if (outBufferSz > (expressionLength + 1)) {
         const char validInputChars[] = "qwertyuioplkjhgfdsazxcvbnm^/*-+";
         ret = validateInput(originalExpression, validInputChars);
@@ -95,7 +95,7 @@ int rpnToInfix(const char *originalExpression, char *outputExpression, size_t ou
             Stack operandTokens;
             initStack(&operandTokens);
             const char operators[] = "^/*-+";
-            for (int j = 0; j != expressionLength; j++) {
+            for (size_t j = 0; j != expressionLength; j++) {
                 char currentTokenString[2];
                 sprintf(currentTokenString, "%c", originalExpression[j]);
                 const char *operatorPtr = strstr(operators, currentTokenString);

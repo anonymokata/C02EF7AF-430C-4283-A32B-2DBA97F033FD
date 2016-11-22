@@ -1,4 +1,5 @@
 // implement typical stack operations --> push pop isEmpty
+#include <stdlib.h>
 #include <memory.h>
 #include "stackstring.h"
 
